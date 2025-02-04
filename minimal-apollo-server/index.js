@@ -10,7 +10,7 @@ const typeDefs = gql`
 // 2. Provide resolver functions for the schema fields
 const resolvers = {
   Query: {
-    hello: () => 'Hello World!',
+    hello: () => 'Hello World From ApolloServer',
   },
 };
 

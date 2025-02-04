@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
-import client from '../lib/apolloClient';
+import type { GetServerSidePropsContext } from 'next';
+import clientFactory from '../lib/apolloClient';
 
 type HomeProps = {
   greeting: string;
@@ -14,11 +15,17 @@ export default function Home({ greeting }: HomeProps) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+
+  const sessionKey = context.req.cookies['sessionKey'] || '';
+
+  // Create an Apollo Client instance that includes the session key in its headers.
+  const client = clientFactory(sessionKey); 
+
   // Run a query on your existing Apollo Server
   const { data } = await client.query({
     query: gql`
-      query GetHello {
+      query {
         hello
       }
     `,

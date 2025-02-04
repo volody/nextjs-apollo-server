@@ -1,9 +1,29 @@
 // lib/apolloClient.ts (TypeScript)
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import fetch from 'node-fetch';
 
-const client = new ApolloClient({
-  uri: 'http://localhost:5000/graphql', // Replace with your Apollo Server URL
-  cache: new InMemoryCache(),
-});
+export default function clientFactory(sessionKey: string) {
 
-export default client;
+  const httpLink = createHttpLink({
+    uri: 'http://localhost:5000/graphql'
+  });
+
+  // Use 'setContext' to inject the session key in the 'Authorization' header
+  const authLink = setContext((_, { headers }) => {
+    return {
+      headers: {
+        ...headers,
+        Authorization: sessionKey ? `Bearer ${sessionKey}` : '',
+      },
+    };
+  });
+
+  // Combine authLink and httpLink
+  return new ApolloClient({
+    // 'ssrMode' ensures Apollo Client is aware it’s running on the server
+    ssrMode: true,
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache(),
+  });
+}
